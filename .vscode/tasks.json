@@ -7,11 +7,11 @@
             "command": "g++",
             "args": [
                 "-g",
-                // "${workspaceFolder}/server/sources/*.cpp",
-                "${workspaceFolder}/client/sources/*.cpp",
+                "${workspaceFolder}/server/sources/*.cpp",
+                //"${workspaceFolder}/client/sources/*.cpp",
                 "-o",
-                // "${workspaceFolder}/server/bin/${fileBasenameNoExtension}"
-                "${workspaceFolder}/client/bin/${fileBasenameNoExtension}"
+                "${workspaceFolder}/server/bin/${fileBasenameNoExtension}"
+                //"${workspaceFolder}/client/bin/${fileBasenameNoExtension}"
             ],
             "group": {
                 "kind": "build",

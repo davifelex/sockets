@@ -8,5 +8,5 @@ int main(void){
     std::string name;
     std::cin >> name;
     hellow(name);
-    system("pause");
+    std::cin;
 }
