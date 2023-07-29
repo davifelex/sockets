@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <iostream>
 #include <unistd.h>
 #define PORT 8080
 
@@ -11,7 +12,9 @@ int main(int argc, char const* argv[])
 {
 	int status, valread, client_fd;
 	struct sockaddr_in serv_addr;
-	char* hello = "Hello from client";
+	char hello[1024];
+	std::cout << "Enter your message: ";
+	std::cin.getline(hello, sizeof(hello));
 	char buffer[1024] = { 0 };
 	if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("\n Socket creation error \n");
