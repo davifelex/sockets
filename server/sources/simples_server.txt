@@ -1,0 +1,132 @@
+Este código é um servidor TCP simples escrito em C++ que recebe conexões de clientes e envia uma mensagem de saudação.
+Vou explicar linha por linha o que cada parte faz:
+
+```c++
+    #include <netinet/in.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+    #include <iostream>
+```
+
+Essas são as bibliotecas incluídas no programa. Elas são necessárias para trabalhar com sockets e funções relacionadas à rede.
+
+```c++
+    #define PORT 8080
+```
+
+Define a porta na qual o servidor irá escutar por conexões. Neste caso, a porta é 8080.
+
+```c++
+    int main(int argc, char const* argv[])
+```
+
+Aqui começa a função principal do programa.
+
+```c++
+    int server_fd, new_socket, valread;
+    struct sockaddr_in address;
+    int opt = 1;
+    int addrlen = sizeof(address);
+    char buffer[1024] = { 0 };
+    const char* hello = "Hello from server";
+```
+
+Declaração das variáveis utilizadas no programa:
+- `server_fd`: Descritor do socket do servidor.
+- `new_socket`: Descritor do socket da conexão com um cliente.
+- `valread`: Número de bytes lidos do cliente.
+- `address`: Estrutura que armazenará as informações do endereço do servidor.
+- `opt`: Opção para a função `setsockopt`.
+- `addrlen`: Tamanho do endereço do servidor.
+- `buffer`: Buffer para armazenar os dados recebidos do cliente.
+- `hello`: Uma mensagem de saudação que será enviada para o cliente.
+
+```c++
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+```
+
+Criação do socket do servidor usando a função `socket()`. `AF_INET` indica que é um socket IPv4, `SOCK_STREAM` indica que é
+um socket de fluxo (TCP) e `0` é o protocolo (usado quando há apenas um protocolo possível para o tipo de socket, neste caso,
+ TCP).
+
+```c++
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+```
+
+Essa chamada à função `setsockopt` permite reutilizar o endereço e a porta do servidor imediatamente após ele ser fechado.
+Isso é útil para evitar problemas caso o servidor seja reiniciado.
+
+```c++
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+```
+
+Configuração das informações do endereço do servidor. `INADDR_ANY` significa que o servidor vai aceitar conexões em qualquer
+interface de rede disponível. `htons()` converte o número da porta para a ordem de bytes da rede (big-endian).
+
+```c++
+    if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+```
+
+Vincula o socket do servidor ao endereço e porta especificados pela estrutura `address` usando a função `bind()`.
+
+```c++
+    if (listen(server_fd, 3) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+```
+
+Coloca o servidor em modo de escuta por conexões, permitindo um backlog de 3 conexões pendentes. Isso significa que o
+servidor pode lidar com até 3 conexões pendentes antes de começar a rejeitar novas conexões.
+
+```c++
+    std::cout << "Server listening on port " << PORT << std::endl;
+```
+
+Exibe uma mensagem informando que o servidor está ouvindo conexões na porta especificada.
+
+```c++
+    while (true) {
+        if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
+            perror("accept");
+            exit(EXIT_FAILURE);
+        }
+
+        valread = read(new_socket, buffer, 1024);
+        printf("%s\n", buffer);
+        send(new_socket, hello, strlen(hello), 0);
+        printf("Hello message sent\n");
+
+        close(new_socket);
+    }
+```
+
+Este é o loop principal do servidor. Ele espera por novas conexões usando a função `accept()`. Quando uma conexão é
+estabelecida, o loop lê os dados enviados pelo cliente usando `read()`, imprime a mensagem recebida e envia a mensagem de
+saudação "Hello from server" de volta para o cliente usando `send()`.
+Após enviar a mensagem, o socket da conexão com o cliente é fechado usando `close()`.
+
+```c++
+    close(server_fd);
+```
+
+Essa linha fecha o socket do servidor, mas nunca será executada nesse exemplo, pois o loop principal está em execução
+indefinidamente.
+
+Esse código implementa um servidor simples que aceita conexões TCP e responde a cada cliente com uma mensagem de saudação.
+É importante ressaltar que ele está projetado para fins educacionais ou de aprendizado, e em um ambiente de produção, várias
+melhorias e tratamentos de erros adicionais seriam necessários.
